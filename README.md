@@ -92,33 +92,13 @@ The unifying principle: **AI amplifies the security professional's institutional
 
 ## Live Investigation Demo
 
-A real WAF alert investigation, from start to verdict, in ~60 seconds:
+A Defender alert investigation — from natural language query to structured verdict — running against live production security platforms.
 
-**1. Investigation Created** — Jira MSSP case ITRQ-6575 (WAF blocked requests surge) ready to start.
+https://github.com/user-attachments/assets/opsoc-demo-investigation.mp4
 
-![Demo - Pending](docs/screenshots/demo-01-pending.png)
+<video src="docs/opsoc-demo-investigation.mp4" controls width="100%"></video>
 
-**2. Streaming Begins** — Agent reads the Jira case via `jira_get_issue`, extracts alert details (6,953 chars of MSSP analysis).
-
-![Demo - Early](docs/screenshots/demo-02-streaming-early.png)
-
-**3. Cross-Platform Pivot** — Agent queries Splunk for WAF logs matching the alert timeframe. Real-time tool calls visible in timeline.
-
-![Demo - Mid](docs/screenshots/demo-03-streaming-mid.png)
-
-**4. Deep Analysis** — Multiple `splunk_search` calls: traffic patterns, action distribution, time-series analysis. Turn 19/25, 62 events tracked.
-
-![Demo - Deep](docs/screenshots/demo-04-streaming-deep.png)
-
-**5. Verdict Delivered** — Investigation complete in 24 turns. Structured report with findings, reasoning for "Inconclusive" verdict, and open questions for the analyst.
-
-![Demo - Completed Header](docs/screenshots/demo-09-completed-header.png)
-
-**6. Full Report** — Detailed findings, evidence trail, and recommendations. The analyst reviews and decides next steps.
-
-![Demo - Report](docs/screenshots/demo-10-completed-report.png)
-
-> This investigation ran against live production security platforms (Jira Cloud + Splunk Cloud), cross-referencing MSSP analysis with actual WAF telemetry. Total time: ~60 seconds. Total cost: <$0.02 in LLM API calls.
+> **What you're seeing:** The analyst types a free-form query about a Defender alert (FileZilla unwanted software detection). OPSOC's AI agent automatically calls `defender_raw_hunt` to search alerts, `get_asset_context` for device info, `get_device_timeline` for activity history, and `jira_search_issues` to cross-reference MSSP records — then delivers a structured False Positive verdict with full evidence trail. 10 turns, ~120 seconds, <$0.02 in LLM API costs.
 
 ---
 
@@ -130,19 +110,9 @@ Real-time overview with investigation statistics, LLM token usage, and platform 
 ![Dashboard](docs/screenshots/01-dashboard.png)
 
 ### Investigation List
-Resizable columns with localStorage persistence, sortable by any column, filterable by status/verdict/source. Copy-on-click for IDs. Column visibility toggle.
+Resizable columns, sortable by any column, filterable by status/verdict/source. Copy-on-click for IDs. Column visibility toggle.
 
 ![Investigations](docs/screenshots/02-investigations.png)
-
-### Investigation Detail — True Positive
-MDE alert investigation showing real-time streaming timeline, structured verdict with dimensional analysis, and Jira integration. Supports continuation with different LLM models.
-
-![Investigation Detail - TP](docs/screenshots/03-investigation-detail-tp-header.png)
-
-### Investigation Detail — False Positive
-WAF alert automatically identified as false positive with detailed reasoning — cross-referenced Jira case, AWS WAF rules, and traffic patterns. Investigation completed in seconds.
-
-![Investigation Detail - FP](docs/screenshots/04-investigation-detail-fp.png)
 
 ### Reports
 Filterable by verdict, source, runbook, and date range. Clickable summary cards. Server-side pagination with global aggregates.
@@ -298,15 +268,9 @@ OPSOC 背后的核心洞察是：**安全运营中最有价值的部分是隐性
 
 ## 实时调查演示
 
-一个真实的 WAF 告警调查，从启动到判定，约 60 秒完成：
+一个 Defender 告警调查 — 从自然语言查询到结构化判定 — 对接生产安全平台实时运行。
 
-1. **创建调查** — Jira MSSP 案例 ITRQ-6575（WAF 阻断请求激增）
-2. **流式处理** — Agent 读取 Jira 案例，提取 MSSP 分析（6,953 字符）
-3. **跨平台关联** — 自动查询 Splunk WAF 日志，匹配告警时间窗口
-4. **深度分析** — 多次 `splunk_search` 调用：流量模式、action 分布、时间序列分析
-5. **判定输出** — 24 轮完成，结构化报告含 Findings、推理过程、开放问题
-
-> 此调查对接生产安全平台（Jira Cloud + Splunk Cloud），MSSP 分析与实际 WAF 遥测数据交叉验证。总耗时约 60 秒，LLM API 成本 <$0.02。
+> 演示视频见上方英文部分。分析师输入自由查询（FileZilla 捆绑软件检测），OPSOC AI Agent 自动调用 `defender_raw_hunt` 搜索告警、`get_asset_context` 获取设备信息、`get_device_timeline` 查询活动历史、`jira_search_issues` 交叉比对 MSSP 记录 — 最终输出结构化 False Positive 判定及完整证据链。10 轮对话，约 120 秒，LLM API 成本 <$0.02。
 
 ---
 
