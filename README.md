@@ -94,11 +94,9 @@ The unifying principle: **AI amplifies the security professional's institutional
 
 A Defender alert investigation — from natural language query to structured verdict — running against live production security platforms.
 
-https://github.com/user-attachments/assets/opsoc-demo-investigation.mp4
+[![OPSOC Demo Video](docs/screenshots/demo-thumbnail.png)](https://youtu.be/VuMIycNDEQY)
 
-<video src="docs/opsoc-demo-investigation.mp4" controls width="100%"></video>
-
-> **What you're seeing:** The analyst types a free-form query about a Defender alert (FileZilla unwanted software detection). OPSOC's AI agent automatically calls `defender_raw_hunt` to search alerts, `get_asset_context` for device info, `get_device_timeline` for activity history, and `jira_search_issues` to cross-reference MSSP records — then delivers a structured False Positive verdict with full evidence trail. 10 turns, ~120 seconds, <$0.02 in LLM API costs.
+> **Click to watch.** The analyst types a free-form query about a Defender alert (FileZilla unwanted software detection). OPSOC's AI agent automatically calls `defender_raw_hunt` to search alerts, `get_asset_context` for device info, `get_device_timeline` for activity history, and `jira_search_issues` to cross-reference MSSP records — then delivers a structured False Positive verdict with full evidence trail. 10 turns, ~120 seconds, less than $0.02 in LLM API costs.
 
 ---
 
@@ -270,7 +268,9 @@ OPSOC 背后的核心洞察是：**安全运营中最有价值的部分是隐性
 
 一个 Defender 告警调查 — 从自然语言查询到结构化判定 — 对接生产安全平台实时运行。
 
-> 演示视频见上方英文部分。分析师输入自由查询（FileZilla 捆绑软件检测），OPSOC AI Agent 自动调用 `defender_raw_hunt` 搜索告警、`get_asset_context` 获取设备信息、`get_device_timeline` 查询活动历史、`jira_search_issues` 交叉比对 MSSP 记录 — 最终输出结构化 False Positive 判定及完整证据链。10 轮对话，约 120 秒，LLM API 成本 <$0.02。
+[![OPSOC 演示视频](docs/screenshots/demo-thumbnail.png)](https://youtu.be/VuMIycNDEQY)
+
+> **点击观看。** 分析师输入自由查询（FileZilla 捆绑软件检测），OPSOC AI Agent 自动调用 `defender_raw_hunt` 搜索告警、`get_asset_context` 获取设备信息、`get_device_timeline` 查询活动历史、`jira_search_issues` 交叉比对 MSSP 记录 — 最终输出结构化 False Positive 判定及完整证据链。10 轮对话，约 120 秒，LLM API 成本不到 $0.02。
 
 ---
 
