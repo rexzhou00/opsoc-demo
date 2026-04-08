@@ -90,6 +90,38 @@ Phase 4 (Planned) — Red Team / Offensive Security
 
 The unifying principle: **AI amplifies the security professional's institutional knowledge across every domain**, not just incident response. The skill-based architecture (34 tools today) is designed to expand into each new domain without rebuilding the core.
 
+## Live Investigation Demo
+
+A real WAF alert investigation, from start to verdict, in ~60 seconds:
+
+**1. Investigation Created** — Jira MSSP case ITRQ-6575 (WAF blocked requests surge) ready to start.
+
+![Demo - Pending](docs/screenshots/demo-01-pending.png)
+
+**2. Streaming Begins** — Agent reads the Jira case via `jira_get_issue`, extracts alert details (6,953 chars of MSSP analysis).
+
+![Demo - Early](docs/screenshots/demo-02-streaming-early.png)
+
+**3. Cross-Platform Pivot** — Agent queries Splunk for WAF logs matching the alert timeframe. Real-time tool calls visible in timeline.
+
+![Demo - Mid](docs/screenshots/demo-03-streaming-mid.png)
+
+**4. Deep Analysis** — Multiple `splunk_search` calls: traffic patterns, action distribution, time-series analysis. Turn 19/25, 62 events tracked.
+
+![Demo - Deep](docs/screenshots/demo-04-streaming-deep.png)
+
+**5. Verdict Delivered** — Investigation complete in 24 turns. Structured report with findings, reasoning for "Inconclusive" verdict, and open questions for the analyst.
+
+![Demo - Completed Header](docs/screenshots/demo-09-completed-header.png)
+
+**6. Full Report** — Detailed findings, evidence trail, and recommendations. The analyst reviews and decides next steps.
+
+![Demo - Report](docs/screenshots/demo-10-completed-report.png)
+
+> This investigation ran against live production security platforms (Jira Cloud + Splunk Cloud), cross-referencing MSSP analysis with actual WAF telemetry. Total time: ~60 seconds. Total cost: <$0.02 in LLM API calls.
+
+---
+
 ## Screenshots
 
 ### Dashboard
@@ -263,6 +295,20 @@ OPSOC 背后的核心洞察是：**安全运营中最有价值的部分是隐性
 | 支持 LLM 提供商 | 12 个（含本地模型） |
 | 安全技能（工具） | 34 个，覆盖 5 个平台 |
 | 审计事件追踪 | 5,600+ |
+
+## 实时调查演示
+
+一个真实的 WAF 告警调查，从启动到判定，约 60 秒完成：
+
+1. **创建调查** — Jira MSSP 案例 ITRQ-6575（WAF 阻断请求激增）
+2. **流式处理** — Agent 读取 Jira 案例，提取 MSSP 分析（6,953 字符）
+3. **跨平台关联** — 自动查询 Splunk WAF 日志，匹配告警时间窗口
+4. **深度分析** — 多次 `splunk_search` 调用：流量模式、action 分布、时间序列分析
+5. **判定输出** — 24 轮完成，结构化报告含 Findings、推理过程、开放问题
+
+> 此调查对接生产安全平台（Jira Cloud + Splunk Cloud），MSSP 分析与实际 WAF 遥测数据交叉验证。总耗时约 60 秒，LLM API 成本 <$0.02。
+
+---
 
 ## 愿景与路线图
 
