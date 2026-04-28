@@ -186,6 +186,11 @@ Per-investigation notification panel renders only on `verdict='true_positive'`. 
 
 ![Investigation — Notifications panel](docs/screenshots/17-investigation-notifications.png)
 
+### Teams Notification — Live Adaptive Card
+The Teams DM that operators actually receive when an investigation reaches `true_positive`. Header combines verdict + execution status (`TRUE POSITIVE — BLOCKED`) for at-a-glance urgency. Status FactSet shows execution / persistence / lateral movement at a glance. IOCs are typed (IP, payload pattern, target domain) with grounding markers. Numbered next-actions are operator-grade and case-specific — for this Log4Shell scanning case, DeepSeek V4-pro produced concrete CIS-app remediation steps including the precise `log4j2.formatMsgNoLookups=true` mitigation flag and version-range advisory. The "Why this fired" section gives the analyst the trigger context.
+
+![Teams Adaptive Card](docs/screenshots/18-teams-card.png)
+
 ## Architecture
 
 ```
