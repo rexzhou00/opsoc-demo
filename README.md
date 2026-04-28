@@ -32,14 +32,14 @@ The key insight behind OPSOC is that **the most valuable part of security operat
 - Which systems are business-critical and which are development sandboxes
 - The company's technology stack, network topology, and normal traffic patterns
 - Historical incident patterns and known false-positive signatures
-- Regulatory context (GxP, FDA/NMPA compliance requirements for biopharma)
+- Regulatory context (GxP and other industry-specific compliance requirements)
 - Relationships with IT, business owners, and external vendors
 
 This knowledge cannot be transferred to an MSSP. But it can be encoded into an AI system's investigation context. **OPSOC makes one person's expertise scalable** — the human provides judgment and context, the AI provides speed and breadth.
 
 ## The Solution
 
-**OPSOC** is a production-grade AI SOC platform deployed at a dual-listed biopharma company (NASDAQ/HKEX). It sits on top of the existing MSSP workflow:
+**OPSOC** is a production-grade AI SOC platform deployed at a publicly listed biopharma company. It sits on top of the existing MSSP workflow:
 
 1. **Auto-ingests** MSSP Jira escalation cases and Defender alerts
 2. **Cross-references** across 5 security platforms (XDR, SIEM, ITSM, Cloud, Firewall)
@@ -59,50 +59,27 @@ The operator reviews OPSOC's verdicts, handles true positives that require human
 | Cost reduction | ~90% vs. MSSP contract |
 | Platform integrations | 5 (XDR, SIEM, ITSM, Cloud, Firewall) + Microsoft Graph (Teams) |
 | LLM providers supported | 12 (cloud + local) |
-| Runbooks (obligation gates) | 5 active families |
+| Runbooks (obligation gates) | 2 active families |
 | KQL hunting queries | 11 (auto-run every 15 min) |
 
 ## Vision & Roadmap
 
 OPSOC currently covers **Blue Team Incident Response** — the MSSP replacement layer. The long-term vision is to apply the same AI-augmented approach across all security operations domains:
 
-```
-Phase 1 (Current) — Incident Response
-  ✅ MSSP case triage and investigation
-  ✅ Automated cross-platform evidence collection
-  ✅ Structured verdicts with quality enforcement
+- **Phase 1 (Current)** — Incident Response: MSSP case triage and investigation
+- **Phase 2** — Detection Engineering: using investigation outcomes to improve detection rules
+- **Phase 3** — Vulnerability Management: business-context-aware prioritization
+- **Phase 4** — Red Team / Offensive Security: AI-assisted attack surface analysis
 
-Phase 2 (Planned) — Detection Engineering
-  ○ Auto-tune detection rules based on false positive patterns
-  ○ Generate Splunk/KQL correlation rules from investigation findings
-  ○ Feedback loop: investigation results improve detection accuracy
+The unifying principle: **AI amplifies the security professional's institutional knowledge across every domain**, not just incident response. The skill-based architecture is designed to expand into each new domain without rebuilding the core.
 
-Phase 3 (Planned) — Vulnerability Management
-  ○ Prioritize vulnerabilities using business context (asset criticality, exposure)
-  ○ Cross-reference CVE data with actual environment configuration
-  ○ Track remediation across teams with automated follow-up
+## What's Shipped Recently
 
-Phase 4 (Planned) — Red Team / Offensive Security
-  ○ AI-assisted attack surface analysis
-  ○ Automated reconnaissance using the same skill framework
-  ○ Purple team exercises: compare detection coverage vs. attack paths
-```
-
-The unifying principle: **AI amplifies the security professional's institutional knowledge across every domain**, not just incident response. The skill-based architecture (34 tools today) is designed to expand into each new domain without rebuilding the core.
-
-## What's New Since Initial Demo (Apr 8 → Apr 27, 2026)
-
-The Apr 8 demo video shows the core investigation loop. Three weeks of follow-on work brought
-substantial new capabilities:
-
-| Capability | Date |
-|---|---|
-| **Phase 1 — Entity extraction + Structured Report** (deterministic IOC grounding, Pydantic-validated canonical report) | Apr 9 |
-| **Phase 2 — Security Event Model** (auto-correlate investigations by entity overlap, derived status, combined timeline) | Apr 9 |
-| **Phase 3 — Case Memory** (human-confirmed only, 3-signal matching, prompt injection as reference-only context) | Apr 11 |
-| **Hunting Module** (11 KQL queries from real APT, auto-run every 15min via MDE Advanced Hunting) | Apr 16 |
-| **Teams TP Notification** (delegated OAuth as soc@, Adaptive Card with IOC table + next actions, recipient management UI) | Apr 27 |
-| **Verdict Ratchet** (safety-rank ordering across 3 verdict-write paths to prevent weak-model downgrade) | Apr 27 |
+- Entity extraction + structured reports
+- Security event auto-correlation across investigations
+- Case memory with revision tracking
+- Hunting module — proactive threat hunting integrated into auto-ingest
+- Teams TP notification — automated escalation channel for confirmed true positives
 
 ## Live Investigation Demo
 
@@ -110,7 +87,7 @@ A Defender alert investigation — from natural language query to structured ver
 
 [![OPSOC Demo Video](docs/screenshots/demo-thumbnail.png)](https://youtu.be/VuMIycNDEQY)
 
-> **Click to watch.** The analyst types a free-form query about a Defender alert (FileZilla unwanted software detection). OPSOC's AI agent automatically calls `defender_raw_hunt` to search alerts, `get_asset_context` for device info, `get_device_timeline` for activity history, and `jira_search_issues` to cross-reference MSSP records — then delivers a structured False Positive verdict with full evidence trail. 10 turns, ~120 seconds, less than $0.02 in LLM API costs.
+> **Click to watch.** The analyst types a free-form query about a Defender alert (FileZilla unwanted software detection). OPSOC's AI agent automatically calls multiple skills across XDR, asset context, device timeline, and ticketing — then delivers a structured False Positive verdict with full evidence trail. ~10 turns, ~120 seconds, less than $0.02 in LLM API costs.
 
 ---
 
@@ -157,37 +134,37 @@ Complete investigation audit trail with date range filtering and CSV export (up 
 ![Audit Log](docs/screenshots/10-audit-log.png)
 
 ### Runbooks
-Obligation-based investigation quality gates. Each runbook defines required evidence (skills that must be called) and required report fields. 5 active runbook families (defender_endpoint_av_triage, splunk_mssp_triage, defender_alert_triage, defender_coverage, context_zailab).
+Obligation-based investigation quality gates. Each runbook defines required evidence (skills that must be called) and required report fields. Currently active families cover Defender endpoint AV triage and MSSP case triage via Splunk.
 
 ![Runbooks](docs/screenshots/11-runbooks.png)
 
-### Hunting (Apr 16, 2026)
-Proactive KQL threat hunting integrated into the auto-ingest cycle. 11 queries derived from a real APT incident — webshell creation, tunnel tools, SQL CLR injection, suspicious parent/child, staging directory activity, credential access tools, w3wp suspicious path, binary masquerading, known C2 IP/domain CLI, net user password change. Findings are deduped by `(query_name + event timestamp + dedup fields)` and the watermark advances fail-closed — only when all queries succeed in a cycle.
+### Hunting
+Proactive KQL threat hunting integrated into the auto-ingest cycle. 11 queries covering common APT TTPs — webshell creation, tunneling, lateral movement, credential access, and binary masquerading. Findings are deduped and the watermark advances fail-closed.
 
 ![Hunting](docs/screenshots/13-hunting.png)
 
-### Memory (Apr 11, 2026)
-Human-confirmed case memory with revision tracking. Each memory entry references a specific revision of the source investigation; mutating the verdict marks the memory stale. Three-signal matching (entity overlap × 2 + alert_type × 1 + title text overlap × 1.5) means first-round investigations can pull historical context even before tool calls have populated entities.
+### Memory
+Human-confirmed case memory with revision tracking. Each memory entry references a specific revision of the source investigation; mutating the verdict marks the memory stale. Multi-signal matching combining entity overlap, alert type, and title text means first-round investigations can pull historical context even before tool calls have populated entities.
 
 ![Memory](docs/screenshots/14-memory.png)
 
-### Events (Apr 9, 2026)
-Investigations auto-correlate into Security Events when their extracted entities overlap within a 4-hour symmetric window. Derived status (`confirmed_threat > needs_review > investigating > false_alarm > open`) is computed from constituent investigation verdicts; the combined timeline merges all member investigations chronologically. Manual unlink supported.
+### Events
+Investigations auto-correlate into Security Events when their extracted entities overlap. Derived status is computed from constituent investigation verdicts; the combined timeline merges all member investigations chronologically. Manual unlink supported.
 
 ![Events](docs/screenshots/15-events.png)
 
-### Teams Notifications — Settings (Apr 27, 2026)
-TP investigations dispatch a Teams Adaptive Card to operator-managed recipients. Authentication secrets stay in `.env`; only the recipient list is editable from the UI. DM (per-UPN), group chat (chat_id), and channel (team_id + channel_id) targets all supported. Auto-seeded from legacy env vars on first boot for backward compatibility.
+### Teams Notifications — Settings
+TP investigations dispatch a Teams Adaptive Card to operator-managed recipients. Authentication secrets stay in `.env`; only the recipient list is editable from the UI. Direct message, group chat, and channel targets all supported.
 
 ![Settings — Recipients](docs/screenshots/16-settings-recipients.png)
 
 ### Teams Notifications — Investigation Detail
-Per-investigation notification panel renders only on `verdict='true_positive'`. Read-only `GET` endpoint on panel mount (no Graph send), explicit `Resend` button for operator-driven retry. Each row shows target type, identifier, status badge (sent / failed / pending / indeterminate / skipped), claimed/completed timestamps, message_id for sent rows, expandable error JSON, and a clear button for failed/indeterminate rows.
+Per-investigation notification panel renders only on `verdict='true_positive'`. Shows per-target status, expandable error details, and operator-driven retry controls.
 
 ![Investigation — Notifications panel](docs/screenshots/17-investigation-notifications.png)
 
 ### Teams Notification — Live Adaptive Card
-The Teams DM that operators actually receive when an investigation reaches `true_positive`. Header combines verdict + execution status (`TRUE POSITIVE — BLOCKED`) for at-a-glance urgency. Status FactSet shows execution / persistence / lateral movement at a glance. IOCs are typed (IP, payload pattern, target domain) with grounding markers. Numbered next-actions are operator-grade and case-specific — for this Log4Shell scanning case, DeepSeek V4-pro produced concrete CIS-app remediation steps including the precise `log4j2.formatMsgNoLookups=true` mitigation flag and version-range advisory. The "Why this fired" section gives the analyst the trigger context.
+The Teams DM operators actually receive when an investigation reaches `true_positive`. Header combines verdict + execution status for at-a-glance urgency. Status FactSet shows execution / persistence / lateral movement at a glance. IOCs are typed (IP, payload pattern, target domain) with grounding markers. Numbered next-actions are operator-grade and case-specific.
 
 ![Teams Adaptive Card](docs/screenshots/18-teams-card.png)
 
@@ -206,28 +183,26 @@ The Teams DM that operators actually receive when an investigation reaches `true
 │              LangGraph Agent Loop (per investigation)                 │
 │  ┌──────────┐  ┌──────────┐  ┌──────────────────────────┐            │
 │  │ Routing  │→ │ Skill    │→ │ Verdict + Enforcer       │            │
-│  │ + Packs  │  │ Execution│  │ (safety-rank ratchet,    │            │
-│  └──────────┘  └──────────┘  │  alert-context aware)    │            │
-│       │            │         └──────────────────────────┘            │
+│  │ + Packs  │  │ Execution│  │                          │            │
+│  └──────────┘  └──────────┘  └──────────────────────────┘            │
+│       │            │                                                  │
 │       │            ↓                                                  │
 │       │     ┌──────────────────┐    ┌────────────────────┐           │
 │       │     │ Entity Extraction│ →  │ Case Memory        │           │
-│       │     │ (deterministic)  │    │ (3-signal match)   │           │
 │       │     └──────────────────┘    └────────────────────┘           │
 │       │                                       │                       │
 │       ↓                                       ↓                       │
 │  ┌────────────────────┐         ┌────────────────────────┐            │
 │  │ Security Events    │ ←───── │ Investigation Report   │            │
-│  │ (entity overlap)   │         │ (Pydantic-validated)  │            │
 │  └────────────────────┘         └────────────────────────┘            │
 ├──────────────────────────────────────────────────────────────────────┤
 │            Auto-Ingest (15min cycle) + Proactive Hunting              │
-│  Jira poll │ Defender poll │ 11 KQL queries (MDE Advanced Hunting)   │
+│  Jira poll │ Defender poll │ KQL hunting queries                      │
 ├──────────────────────────────────────────────────────────────────────┤
 │                       Multi-Provider LLM Layer                        │
 │  OpenRouter │ Kimi │ Anthropic │ OpenAI │ ChatGPT Codex │ Ollama │   │
 ├──────────────────────────────────────────────────────────────────────┤
-│                          25 Security Skills                           │
+│                          Security Skills                              │
 │  ┌───────────┐ ┌────────┐ ┌──────┐ ┌─────┐ ┌────────┐ ┌───────────┐ │
 │  │ Microsoft │ │ Splunk │ │ Jira │ │ AWS │ │ Forti  │ │ Microsoft │ │
 │  │ XDR/Entra │ │ Cloud  │ │Cloud │ │     │ │Analyzer│ │ Graph     │ │
@@ -253,15 +228,7 @@ The Teams DM that operators actually receive when an investigation reaches `true
 | Frontend | React + TypeScript + Tailwind CSS, 15 pages |
 | LLM | Multi-provider (OpenRouter, Kimi, Anthropic, OpenAI, ChatGPT Codex, Ollama, vLLM, ...) |
 | Platforms | Microsoft Defender XDR, Splunk Cloud, Jira Cloud, AWS, FortiAnalyzer, Microsoft Graph (Teams) |
-| Development | Claude Code (Opus 4.7) + Codex (GPT-5.4) review |
-
-## Development Methodology
-
-This project uses a **dual-AI development workflow**:
-- **Claude Code (Opus 4.6)**: Primary developer — architecture, implementation, self-review with mandatory invariant verification
-- **Codex (GPT-5.4)**: Independent reviewer — finds architectural blind spots that the implementer can't see from inside the code
-- **Three Engineering Disciplines**: Side-Effect Awareness, Failure Atomicity, Integration Boundary verification — enforced on every code change
-- **5-step change workflow**: Proposal → Implementation → Invariant Verification → Runtime Evidence → Codex Review
+| Development | AI-assisted with peer-model code review |
 
 ## About the Author
 
@@ -296,14 +263,14 @@ OPSOC 背后的核心洞察是：**安全运营中最有价值的部分是隐性
 - 哪些系统是业务关键的，哪些是开发沙箱
 - 公司的技术栈、网络拓扑和正常流量模式
 - 历史事件模式和已知的误报特征
-- 监管合规背景（GxP、FDA/NMPA 对生物制药的要求）
+- 监管合规背景（GxP 等行业特定合规要求）
 - 与 IT、业务负责人和外部供应商的关系
 
 这些知识无法转移给 MSSP。但它可以编码到 AI 系统的调查上下文中。**OPSOC 让一个人的专业能力可扩展** — 人提供判断力和上下文，AI 提供速度和广度。
 
 ## 解决方案
 
-**OPSOC** 是一个生产级 AI SOC 平台，部署于一家纳斯达克/港交所双重上市的生物制药公司：
+**OPSOC** 是一个生产级 AI SOC 平台，部署于一家上市生物制药公司：
 
 1. **自动摄入** MSSP 的 Jira 升级案例和 Defender 告警
 2. **跨平台关联** 5 个安全平台（XDR、SIEM、ITSM、Cloud、Firewall）
@@ -323,7 +290,7 @@ OPSOC 背后的核心洞察是：**安全运营中最有价值的部分是隐性
 | 成本降低 | 相比 MSSP 合同降低约 90% |
 | 平台集成 | 5 个（XDR、SIEM、ITSM、Cloud、Firewall）+ Microsoft Graph（Teams 通知） |
 | 支持 LLM 提供商 | 12 个（含本地模型） |
-| Runbook（义务质量门）| 5 个活跃家族 |
+| Runbook（义务质量门）| 2 个活跃家族 |
 | KQL Hunting 查询 | 11 个（每 15 分钟自动运行） |
 
 ## 实时调查演示
@@ -332,7 +299,7 @@ OPSOC 背后的核心洞察是：**安全运营中最有价值的部分是隐性
 
 [![OPSOC 演示视频](docs/screenshots/demo-thumbnail.png)](https://youtu.be/VuMIycNDEQY)
 
-> **点击观看。** 分析师输入自由查询（FileZilla 捆绑软件检测），OPSOC AI Agent 自动调用 `defender_raw_hunt` 搜索告警、`get_asset_context` 获取设备信息、`get_device_timeline` 查询活动历史、`jira_search_issues` 交叉比对 MSSP 记录 — 最终输出结构化 False Positive 判定及完整证据链。10 轮对话，约 120 秒，LLM API 成本不到 $0.02。
+> **点击观看。** 分析师输入自由查询（FileZilla 捆绑软件检测），OPSOC AI Agent 自动调用 XDR、资产上下文、设备时间线、Jira 工单等多个 skill — 最终输出结构化 False Positive 判定及完整证据链。约 10 轮对话，约 120 秒，LLM API 成本不到 $0.02。
 
 ---
 
@@ -340,44 +307,20 @@ OPSOC 背后的核心洞察是：**安全运营中最有价值的部分是隐性
 
 OPSOC 当前覆盖 **Blue Team 事件响应** — 即 MSSP 替代层。长期愿景是将同样的 AI 增强方法应用到安全运营的所有领域：
 
-```
-第一阶段（当前） — 事件响应
-  ✅ MSSP 案例分流与调查
-  ✅ 自动化跨平台证据收集
-  ✅ 结构化判定 + 质量门控
+- **第一阶段（当前）** — 事件响应：MSSP 案例分流与调查
+- **第二阶段** — 检测工程：用调查结果改进检测规则
+- **第三阶段** — 漏洞管理：基于业务上下文的优先级判定
+- **第四阶段** — Red Team / 攻击性安全：AI 辅助攻击面分析
 
-第二阶段（规划中） — 检测工程
-  ○ 基于误报模式自动调优检测规则
-  ○ 从调查结果生成 Splunk/KQL 关联规则
-  ○ 反馈闭环：调查结果改善检测准确度
-
-第三阶段（规划中） — 漏洞管理
-  ○ 利用业务上下文确定漏洞优先级（资产关键性、暴露面）
-  ○ 将 CVE 数据与实际环境配置交叉比对
-  ○ 跨团队追踪修复进度
-
-第四阶段（规划中） — Red Team / 攻击性安全
-  ○ AI 辅助攻击面分析
-  ○ 使用同一技能框架进行自动化侦察
-  ○ Purple Team 演练：检测覆盖 vs. 攻击路径对比
-```
-
-统一原则：**AI 将安全专家的组织知识放大到每个领域**，而不仅仅是事件响应。技能架构（目前 34 个工具）设计为可扩展到每个新领域，无需重建核心。
+统一原则：**AI 将安全专家的组织知识放大到每个领域**，而不仅仅是事件响应。基于 skill 的架构设计为可扩展到每个新领域，无需重建核心。
 
 ## 技术亮点
 
-- **LangGraph Agent Loop**: 每次调查运行独立的 agent loop，基于告警类型自动选择 skill pack
-- **Fail-closed 设计**: 所有无法得出结论的调查路径都会升级，绝不静默丢弃告警
-- **多模型支持**: 12 种 LLM provider，每次调查可独立选择模型，支持 Ollama/vLLM 本地部署
-- **Runbook Enforcer**: 四状态义务模型（met/not_applicable/unavailable/missing），自动质量门控
-- **完整审计链**: 每个决策和操作都有记录，5,600+ 事件
-
-## 开发方法
-
-采用 **双 AI 开发工作流**：
-- **Claude Code (Opus 4.6)**: 主开发者 — 架构设计、代码实现、带不变量验证的自审
-- **Codex (GPT-5.4)**: 独立审查者 — 发现实现者从代码内部看不到的架构盲点
-- **三条工程纪律**: 副作用感知、失败原子性、集成边界验证 — 每次代码变更强制执行
+- **LangGraph Agent Loop**：每次调查运行独立的 agent loop，基于告警类型自动选择 skill pack
+- **Fail-closed 设计**：所有无法得出结论的调查路径都会升级，绝不静默丢弃告警
+- **多模型支持**：12 种 LLM provider，每次调查可独立选择模型，支持 Ollama/vLLM 本地部署
+- **Runbook Enforcer**：基于义务的质量门控
+- **完整审计链**：每个决策和操作都有记录
 
 ## 关于作者
 
@@ -388,4 +331,4 @@ OPSOC 当前覆盖 **Blue Team 事件响应** — 即 MSSP 替代层。长期愿
 
 ---
 
-*Built with Claude Code (Opus 4.6) + Codex (GPT-5.4) review pipeline*
+*Built with AI-assisted development workflow*
