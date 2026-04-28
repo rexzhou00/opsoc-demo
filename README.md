@@ -49,18 +49,18 @@ This knowledge cannot be transferred to an MSSP. But it can be encoded into an A
 
 The operator reviews OPSOC's verdicts, handles true positives that require human action, and continuously improves the system's investigation logic.
 
-## Key Metrics (Production Data)
+## Key Metrics (Production Data, 2026-04-27)
 
 | Metric | Value |
 |--------|-------|
-| Investigations completed | 75+ |
+| Investigations completed | 99+ |
 | False positive identification rate | 65%+ |
 | Average investigation time | 30-60 seconds |
 | Cost reduction | ~90% vs. MSSP contract |
-| Platform integrations | 5 (XDR, SIEM, ITSM, Cloud, Firewall) |
+| Platform integrations | 5 (XDR, SIEM, ITSM, Cloud, Firewall) + Microsoft Graph (Teams) |
 | LLM providers supported | 12 (cloud + local) |
-| Security skills (tools) | 34 across 5 platforms |
-| Audit events tracked | 5,600+ |
+| Runbooks (obligation gates) | 5 active families |
+| KQL hunting queries | 11 (auto-run every 15 min) |
 
 ## Vision & Roadmap
 
@@ -89,6 +89,20 @@ Phase 4 (Planned) — Red Team / Offensive Security
 ```
 
 The unifying principle: **AI amplifies the security professional's institutional knowledge across every domain**, not just incident response. The skill-based architecture (34 tools today) is designed to expand into each new domain without rebuilding the core.
+
+## What's New Since Initial Demo (Apr 8 → Apr 27, 2026)
+
+The Apr 8 demo video shows the core investigation loop. Three weeks of follow-on work brought
+substantial new capabilities:
+
+| Capability | Date |
+|---|---|
+| **Phase 1 — Entity extraction + Structured Report** (deterministic IOC grounding, Pydantic-validated canonical report) | Apr 9 |
+| **Phase 2 — Security Event Model** (auto-correlate investigations by entity overlap, derived status, combined timeline) | Apr 9 |
+| **Phase 3 — Case Memory** (human-confirmed only, 3-signal matching, prompt injection as reference-only context) | Apr 11 |
+| **Hunting Module** (11 KQL queries from real APT, auto-run every 15min via MDE Advanced Hunting) | Apr 16 |
+| **Teams TP Notification** (delegated OAuth as soc@, Adaptive Card with IOC table + next actions, recipient management UI) | Apr 27 |
+| **Verdict Ratchet** (safety-rank ordering across 3 verdict-write paths to prevent weak-model downgrade) | Apr 27 |
 
 ## Live Investigation Demo
 
@@ -143,35 +157,78 @@ Complete investigation audit trail with date range filtering and CSV export (up 
 ![Audit Log](docs/screenshots/10-audit-log.png)
 
 ### Runbooks
-Obligation-based investigation quality gates. Each runbook defines required evidence (skills that must be called) and required report fields. Automated compliance at 86%.
+Obligation-based investigation quality gates. Each runbook defines required evidence (skills that must be called) and required report fields. 5 active runbook families (defender_endpoint_av_triage, splunk_mssp_triage, defender_alert_triage, defender_coverage, context_zailab).
 
 ![Runbooks](docs/screenshots/11-runbooks.png)
+
+### Hunting (Apr 16, 2026)
+Proactive KQL threat hunting integrated into the auto-ingest cycle. 11 queries derived from a real APT incident — webshell creation, tunnel tools, SQL CLR injection, suspicious parent/child, staging directory activity, credential access tools, w3wp suspicious path, binary masquerading, known C2 IP/domain CLI, net user password change. Findings are deduped by `(query_name + event timestamp + dedup fields)` and the watermark advances fail-closed — only when all queries succeed in a cycle.
+
+![Hunting](docs/screenshots/13-hunting.png)
+
+### Memory (Apr 11, 2026)
+Human-confirmed case memory with revision tracking. Each memory entry references a specific revision of the source investigation; mutating the verdict marks the memory stale. Three-signal matching (entity overlap × 2 + alert_type × 1 + title text overlap × 1.5) means first-round investigations can pull historical context even before tool calls have populated entities.
+
+![Memory](docs/screenshots/14-memory.png)
+
+### Events (Apr 9, 2026)
+Investigations auto-correlate into Security Events when their extracted entities overlap within a 4-hour symmetric window. Derived status (`confirmed_threat > needs_review > investigating > false_alarm > open`) is computed from constituent investigation verdicts; the combined timeline merges all member investigations chronologically. Manual unlink supported.
+
+![Events](docs/screenshots/15-events.png)
+
+### Teams Notifications — Settings (Apr 27, 2026)
+TP investigations dispatch a Teams Adaptive Card to operator-managed recipients. Authentication secrets stay in `.env`; only the recipient list is editable from the UI. DM (per-UPN), group chat (chat_id), and channel (team_id + channel_id) targets all supported. Auto-seeded from legacy env vars on first boot for backward compatibility.
+
+![Settings — Recipients](docs/screenshots/16-settings-recipients.png)
+
+### Teams Notifications — Investigation Detail
+Per-investigation notification panel renders only on `verdict='true_positive'`. Read-only `GET` endpoint on panel mount (no Graph send), explicit `Resend` button for operator-driven retry. Each row shows target type, identifier, status badge (sent / failed / pending / indeterminate / skipped), claimed/completed timestamps, message_id for sent rows, expandable error JSON, and a clear button for failed/indeterminate rows.
+
+![Investigation — Notifications panel](docs/screenshots/17-investigation-notifications.png)
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    OPSOC Web UI (React)                  │
-│  Dashboard │ Investigations │ Reports │ Auto-Ingest │ ...│
-├─────────────────────────────────────────────────────────┤
-│                  FastAPI Backend + SQLite                 │
-│  Investigation Engine │ Audit │ LLM Providers │ Skills   │
-├─────────────────────────────────────────────────────────┤
-│              LangGraph Agent Loop (per investigation)    │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐   │
-│  │ Routing  │→ │ Skill    │→ │ Verdict + Enforcer   │   │
-│  │ + Packs  │  │ Execution│  │ (fail-closed)        │   │
-│  └──────────┘  └──────────┘  └──────────────────────┘   │
-├─────────────────────────────────────────────────────────┤
-│                  Multi-Provider LLM Layer                │
-│  OpenRouter │ Kimi │ Anthropic │ OpenAI │ Ollama │ ...   │
-├─────────────────────────────────────────────────────────┤
-│                   34 Security Skills                     │
-│  ┌───────────┐ ┌────────┐ ┌──────┐ ┌─────┐ ┌────────┐  │
-│  │ Microsoft │ │ Splunk │ │ Jira │ │ AWS │ │ Forti  │  │
-│  │ XDR/Entra │ │ Cloud  │ │Cloud │ │     │ │Analyzer│  │
-│  └───────────┘ └────────┘ └──────┘ └─────┘ └────────┘  │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                         OPSOC Web UI (React, 15 pages)                │
+│  Dashboard │ Investigations │ Reports │ Auto-Ingest │ Hunting │      │
+│  Memory │ Events │ Settings (recipients + LLM) │ ...                  │
+├──────────────────────────────────────────────────────────────────────┤
+│                       FastAPI Backend + SQLite                        │
+│  Investigation │ Audit │ LLM Providers │ Skills │ Notifications      │
+│  Memory │ Events │ Hunting │ Replay Eval                              │
+├──────────────────────────────────────────────────────────────────────┤
+│              LangGraph Agent Loop (per investigation)                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────────────┐            │
+│  │ Routing  │→ │ Skill    │→ │ Verdict + Enforcer       │            │
+│  │ + Packs  │  │ Execution│  │ (safety-rank ratchet,    │            │
+│  └──────────┘  └──────────┘  │  alert-context aware)    │            │
+│       │            │         └──────────────────────────┘            │
+│       │            ↓                                                  │
+│       │     ┌──────────────────┐    ┌────────────────────┐           │
+│       │     │ Entity Extraction│ →  │ Case Memory        │           │
+│       │     │ (deterministic)  │    │ (3-signal match)   │           │
+│       │     └──────────────────┘    └────────────────────┘           │
+│       │                                       │                       │
+│       ↓                                       ↓                       │
+│  ┌────────────────────┐         ┌────────────────────────┐            │
+│  │ Security Events    │ ←───── │ Investigation Report   │            │
+│  │ (entity overlap)   │         │ (Pydantic-validated)  │            │
+│  └────────────────────┘         └────────────────────────┘            │
+├──────────────────────────────────────────────────────────────────────┤
+│            Auto-Ingest (15min cycle) + Proactive Hunting              │
+│  Jira poll │ Defender poll │ 11 KQL queries (MDE Advanced Hunting)   │
+├──────────────────────────────────────────────────────────────────────┤
+│                       Multi-Provider LLM Layer                        │
+│  OpenRouter │ Kimi │ Anthropic │ OpenAI │ ChatGPT Codex │ Ollama │   │
+├──────────────────────────────────────────────────────────────────────┤
+│                          25 Security Skills                           │
+│  ┌───────────┐ ┌────────┐ ┌──────┐ ┌─────┐ ┌────────┐ ┌───────────┐ │
+│  │ Microsoft │ │ Splunk │ │ Jira │ │ AWS │ │ Forti  │ │ Microsoft │ │
+│  │ XDR/Entra │ │ Cloud  │ │Cloud │ │     │ │Analyzer│ │ Graph     │ │
+│  │ + MDE LR  │ │        │ │ +CMDB│ │     │ │ (RPC)  │ │ (Teams)   │ │
+│  └───────────┘ └────────┘ └──────┘ └─────┘ └────────┘ └───────────┘ │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Core Design Principles
@@ -187,11 +244,11 @@ Obligation-based investigation quality gates. Each runbook defines required evid
 | Layer | Technology |
 |-------|-----------|
 | Agent Framework | LangGraph (Python) |
-| Backend | FastAPI + SQLite (WAL mode) |
-| Frontend | React + TypeScript + Tailwind CSS |
+| Backend | FastAPI + SQLite (WAL mode), 16 tables |
+| Frontend | React + TypeScript + Tailwind CSS, 15 pages |
 | LLM | Multi-provider (OpenRouter, Kimi, Anthropic, OpenAI, ChatGPT Codex, Ollama, vLLM, ...) |
-| Platforms | Microsoft Defender XDR, Splunk Cloud, Jira Cloud, AWS, FortiAnalyzer |
-| Development | Claude Code (Opus 4.6) + Codex (GPT-5.4) review |
+| Platforms | Microsoft Defender XDR, Splunk Cloud, Jira Cloud, AWS, FortiAnalyzer, Microsoft Graph (Teams) |
+| Development | Claude Code (Opus 4.7) + Codex (GPT-5.4) review |
 
 ## Development Methodology
 
@@ -251,18 +308,18 @@ OPSOC 背后的核心洞察是：**安全运营中最有价值的部分是隐性
 
 运营人员审查 OPSOC 的判定，处理需要人工干预的真阳性事件，并持续改进系统的调查逻辑。
 
-## 核心指标（生产数据）
+## 核心指标（生产数据，2026-04-27）
 
 | 指标 | 数值 |
 |------|------|
-| 已完成调查 | 75+ |
+| 已完成调查 | 99+ |
 | 误报识别率 | 65%+ |
 | 平均调查时间 | 30-60 秒 |
 | 成本降低 | 相比 MSSP 合同降低约 90% |
-| 平台集成 | 5 个（XDR、SIEM、ITSM、Cloud、Firewall） |
+| 平台集成 | 5 个（XDR、SIEM、ITSM、Cloud、Firewall）+ Microsoft Graph（Teams 通知） |
 | 支持 LLM 提供商 | 12 个（含本地模型） |
-| 安全技能（工具） | 34 个，覆盖 5 个平台 |
-| 审计事件追踪 | 5,600+ |
+| Runbook（义务质量门）| 5 个活跃家族 |
+| KQL Hunting 查询 | 11 个（每 15 分钟自动运行） |
 
 ## 实时调查演示
 
