@@ -1,9 +1,8 @@
 # OPSOC — One Person Security Operation Center
 
-> AI-powered security operations that help one experienced professional work across multiple
-> security domains with greater speed, coverage, and consistency.
+> AI-powered SOC that turns one security professional into a complete security operations team.
 >
-> 用 AI 扩展一名资深安全专家在多个安全领域中的速度、覆盖面和一致性。
+> 用 AI 让一个安全专家胜任完整的安全运营团队。
 
 [English](#english) | [中文](#中文)
 
@@ -17,7 +16,7 @@
 |----------------|---------------|
 | ~1M RMB/year MSSP contract | ~100K RMB/year (LLM API costs) |
 | Hours per investigation (manual cross-platform triage) | 30-60 seconds per investigation (automated) |
-| 65%+ alerts are false positives, each still requires human review | False positives identified for operator review with an evidence trail |
+| 65%+ alerts are false positives, each still requires human review | False positives auto-dismissed with evidence trail |
 | MSSP analysts lack company context, produce generic reports | Investigations leverage full enterprise context — asset ownership, business criticality, historical patterns |
 
 ## The Problem
@@ -46,7 +45,7 @@ This knowledge cannot be transferred to an MSSP. But it can be encoded into an A
 2. **Cross-references** across 5 security platforms (XDR, SIEM, ITSM, Cloud, Firewall)
 3. **Produces** structured investigation reports with verdicts (True Positive / False Positive / Inconclusive)
 4. **Enforces** investigation quality through obligation-based runbooks
-5. **Maintains** append-only audit records for compliance and review
+5. **Maintains** complete audit trail for compliance
 
 The operator reviews OPSOC's verdicts, handles true positives that require human action, and continuously improves the system's investigation logic.
 
@@ -63,31 +62,16 @@ The operator reviews OPSOC's verdicts, handles true positives that require human
 | Runbooks (obligation gates) | 2 active families |
 | KQL hunting queries | 11 (auto-run every 15 min) |
 
-## Capability Progress
+## Vision & Roadmap
 
-The original roadmap started with Incident Response as the production foundation and identified
-three expansion phases. OPSOC has now delivered bounded capabilities in the next two domains and
-completed its first authorized white-box assessment in the fourth:
+OPSOC currently covers **Blue Team Incident Response** — the MSSP replacement layer. The long-term vision is to apply the same AI-augmented approach across all security operations domains:
 
-- **Phase 1 — Incident Response (Operational):** MSSP case triage, Defender alert investigation,
-  cross-platform enrichment, structured verdicts, quality gates, case memory, and auditable human
-  review.
-- **Phase 2 — Detection Engineering (Implemented at the coverage layer):** scheduled KQL hunting,
-  finding deduplication, fail-closed watermarks, ATT&CK-oriented hunting and coverage artifacts,
-  and assessment outputs that can be converted into detection requirements. OPSOC does not
-  autonomously deploy production detection rules.
-- **Phase 3 — Vulnerability Management (Implemented as an operator-led prioritization and
-  validation workflow):** parses Tenable/Nessus data, prioritizes findings using exploitability
-  and business context, and provides class-based validation runbooks. Full agent/enforcer
-  automation and vulnerability lifecycle management are outside the current claim.
-- **Phase 4 — Red Team / Offensive Security (First assessment completed; active development):** a
-  separate, scope-gated pentest workflow has supported an authorized white-box assessment of an
-  enterprise agentic-AI platform. Testing remains human-led; intrusive actions, authorization,
-  impact judgment, and final accountability stay with the operator.
+- **Phase 1 (Current)** — Incident Response: MSSP case triage and investigation
+- **Phase 2** — Detection Engineering: using investigation outcomes to improve detection rules
+- **Phase 3** — Vulnerability Management: business-context-aware prioritization
+- **Phase 4** — Red Team / Offensive Security: AI-assisted attack surface analysis
 
-The unifying principle is unchanged: **AI amplifies the security professional's institutional
-knowledge across domains**. The same skill-based core is reused without pretending that an LLM
-can replace authorization, evidence, or expert judgment.
+The unifying principle: **AI amplifies the security professional's institutional knowledge across every domain**, not just incident response. The skill-based architecture is designed to expand into each new domain without rebuilding the core.
 
 ## What's Shipped Recently
 
@@ -95,34 +79,7 @@ can replace authorization, evidence, or expert judgment.
 - Security event auto-correlation across investigations
 - Case memory with revision tracking
 - Hunting module — proactive threat hunting integrated into auto-ingest
-- Detection coverage outputs — evidence from investigations and assessments can be translated into
-  concrete detection requirements
-- Vulnerability prioritization and validation — Tenable/Nessus ingestion, exploitability ranking,
-  business-context enrichment, and operator-led class-based validation runbooks
-- Human-led white-box assessment workflow — scoped testing, evidence tracking, correction history,
-  retesting, and structured findings
 - Teams TP notification — automated escalation channel for confirmed true positives
-
-## First AI-Assisted White-Box Assessment
-
-OPSOC recently supported the testing phase of an authorized white-box assessment of an enterprise
-agentic-AI platform in a pre-production environment. The assessment combined architecture and
-source review with controlled behavioral and runtime testing.
-
-The milestone demonstrates a practical model for AI-powered penetration testing:
-
-- AI expands hypotheses and helps maintain coverage across application, identity, agent, sandbox,
-  tool, and audit boundaries.
-- Test records preserve the chain from scope to test case, evidence, finding, correction, and
-  retest.
-- Runtime evidence is compared with architecture and source claims; model explanations are never
-  treated as proof.
-- Model, prompt, route, and available tool set are tested as parts of the system under test.
-- Human testers retain control of authorization, intrusive-action approval, oracle selection,
-  impact assessment, and the final conclusion.
-
-The result is an evidence-aware co-testing workflow—not an autonomous exploitation product or a
-"prompt in, pentest report out" claim.
 
 ## Live Investigation Demo
 
@@ -290,7 +247,7 @@ The Teams DM operators actually receive when an investigation reaches `true_posi
 |----------------|----------------|
 | 每年约 100 万元 MSSP 合同 | 每年约 10 万元（LLM API 成本） |
 | 每个调查数小时（手动跨平台分流） | 每个调查 30-60 秒（自动化） |
-| 65%+ 告警是误报，每个仍需人工审查 | 识别误报并附证据链，交由运营人员复核 |
+| 65%+ 告警是误报，每个仍需人工审查 | 误报自动识别并附完整证据链 |
 | MSSP 分析师缺乏企业背景，产出通用报告 | 调查利用完整的企业上下文 — 资产归属、业务关键性、历史模式 |
 
 ## 问题
@@ -319,7 +276,7 @@ OPSOC 背后的核心洞察是：**安全运营中最有价值的部分是隐性
 2. **跨平台关联** 5 个安全平台（XDR、SIEM、ITSM、Cloud、Firewall）
 3. **产出** 带结构化判定的调查报告（True Positive / False Positive / Inconclusive）
 4. **质量保障** 通过基于义务的 Runbook 强制执行调查质量
-5. **审计记录** 以追加方式记录决策和操作，供合规与复核使用
+5. **完整审计** 每个决策和操作都有记录
 
 运营人员审查 OPSOC 的判定，处理需要人工干预的真阳性事件，并持续改进系统的调查逻辑。
 
@@ -346,37 +303,16 @@ OPSOC 背后的核心洞察是：**安全运营中最有价值的部分是隐性
 
 ---
 
-## 能力进展
+## 愿景与路线图
 
-原始路线图以事件响应作为生产基础，并规划了三个扩展阶段。目前 OPSOC 已在第二、
-第三阶段交付有明确边界的能力，第四阶段也完成了第一次授权白盒评估：
+OPSOC 当前覆盖 **Blue Team 事件响应** — 即 MSSP 替代层。长期愿景是将同样的 AI 增强方法应用到安全运营的所有领域：
 
-- **第一阶段 — 事件响应（已运行）：** MSSP 案例分流、Defender 告警调查、跨平台取证、
-  结构化判定、质量门控、案例记忆与可审计的人工复核。
-- **第二阶段 — 检测工程（已实现 coverage 层）：** 定时 KQL hunting、发现去重、
-  fail-closed watermark、面向 ATT&CK 的 hunting/coverage artifacts，以及将调查和评估证据
-  转化为检测需求。OPSOC 不会自动将检测规则发布到生产环境。
-- **第三阶段 — 漏洞管理（已实现 operator-led 优先级与验证流程）：** 解析 Tenable/Nessus
-  数据，结合可利用性和业务上下文确定优先级，并提供按漏洞类型划分的验证 runbook。
-  完整的 agent/enforcer 自动化与漏洞生命周期管理不属于当前能力声明。
-- **第四阶段 — Red Team / 攻击性安全（首次评估完成，持续开发）：** 独立且受 scope
-  门控的 pentest workflow 已支持一次企业级 agentic-AI 平台的授权白盒评估。测试仍由人主导，
-  授权、高风险操作审批、影响判断和最终责任均由运营人员掌握。
+- **第一阶段（当前）** — 事件响应：MSSP 案例分流与调查
+- **第二阶段** — 检测工程：用调查结果改进检测规则
+- **第三阶段** — 漏洞管理：基于业务上下文的优先级判定
+- **第四阶段** — Red Team / 攻击性安全：AI 辅助攻击面分析
 
-统一原则没有变化：**AI 将安全专家的组织知识放大到多个领域**。同一个基于 skill 的核心
-可以复用，但不会把 LLM 的解释当成授权、证据或专家判断的替代品。
-
-## 第一次 AI 辅助白盒评估
-
-OPSOC 最近支持完成了一次企业级 agentic-AI 平台的授权白盒评估测试阶段。评估在预生产
-环境中进行，结合了架构与源码审查、受控行为测试和运行时验证。
-
-这次实践验证的是一种可落地的 AI-powered pentest 模式：AI 帮助扩展假设、维护覆盖、
-发现矛盾并整理证据；从 scope、测试用例、证据、finding、修正到 retest 的链路被完整保留。
-模型、prompt、route 和可用工具集都属于被测系统的一部分，而模型自己的解释不构成证据。
-
-授权、高风险操作审批、oracle 选择、影响判断和最终结论始终由人负责。这是 evidence-aware
-co-testing workflow，不是自动利用产品，也不是“输入 prompt 就得到 pentest report”。
+统一原则：**AI 将安全专家的组织知识放大到每个领域**，而不仅仅是事件响应。基于 skill 的架构设计为可扩展到每个新领域，无需重建核心。
 
 ## 技术亮点
 
